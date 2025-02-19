@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - directory: /
+    package-ecosystem: pub
+    open-pull-requests-limit: 5
+    rebase-strategy: auto
+    schedule:
+      interval: daily
