@@ -4,7 +4,7 @@ A fast and reliable Dart library for finding available network ports. Supports p
 
 [![pub package](https://img.shields.io/pub/v/freeport.svg)](https://pub.dev/packages/freeport)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Test](https://github.com/medz/freeport/actions/workflows/test.yml/badge.svg)](https://github.com/medz/freeport/actions/workflows/test.yml)
+[![Tests](https://github.com/medz/freeport/actions/workflows/test.yml/badge.svg)](https://github.com/medz/freeport/actions/workflows/test.yml)
 
 ## What is freeport?
 
