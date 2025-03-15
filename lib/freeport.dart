@@ -24,18 +24,37 @@ import 'dart:io';
 Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
   final address = _resolveAddress(hostname);
   if (preferred != null && preferred.isNotEmpty) {
+    // Default skip port
+    int? skipPort;
+
+    // Map preferred ports to futures
+    final futures = preferred.map((port) async {
+      final available = await isAvailablePort(port, hostname: address);
+      if (available) {
+        return skipPort ??= port;
+      }
+    });
+
+    // Wait for any future to complete
+    final maybeFastPort = await Future.any(futures);
+    if (maybeFastPort != null) return maybeFastPort;
+
+    // If none of the preferred ports are available, using for loop
     for (final port in preferred) {
+      if (port == skipPort) continue;
       if (await isAvailablePort(port, hostname: address)) {
         return port;
       }
     }
   }
 
-  final socket = await ServerSocket.bind(address, 0);
-  final port = socket.port;
-  await socket.close();
+  // Any port
+  return await ServerSocket.bind(address, 0).then((socket) async {
+    final port = socket.port;
+    await socket.close();
 
-  return port;
+    return port;
+  });
 }
 
 /// Checks if a specific [port] is available on the given [hostname].

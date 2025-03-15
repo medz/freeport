@@ -7,6 +7,8 @@
 
 ### Improvements
 
+- Implemented parallel port checking in `freePort` function for significant performance improvement when testing multiple preferred ports
+- Added two-stage port checking strategy with fallback mechanism for better reliability
 - Refactored the implementation of `isAvailablePort` function with better Future handling
 - Enhanced handling of port 0 logic
 
