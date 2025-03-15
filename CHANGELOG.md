@@ -12,7 +12,7 @@
 
 ### Credits
 
-- Thanks to @FourLeafTec for submitting PR #2, fixing the Socket resource leak issue
+- Thanks to [@FourLeafTec](https://github.com/FourLeafTec) for submitting PR [#2](https://github.com/medz/freeport/pull/2), fixing the Socket resource leak issue
 
 ## 0.0.1
 
