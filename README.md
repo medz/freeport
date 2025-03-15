@@ -1,17 +1,27 @@
 # freeport
 
-A Dart library for finding available network ports. Supports preferred ports, custom hostnames and port availability checking with optimized performance.
+A fast and reliable Dart library for finding available network ports. Supports parallel port checking, preferred ports selection, custom hostnames and detailed port availability verification.
 
 [![pub package](https://img.shields.io/pub/v/freeport.svg)](https://pub.dev/packages/freeport)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Test](https://github.com/medz/freeport/actions/workflows/test.yml/badge.svg)](https://github.com/medz/freeport/actions/workflows/test.yml)
+
+## What is freeport?
+
+Freeport is a zero-dependency, lightweight Dart utility designed to solve the common problem of finding available network ports for your applications. Whether you're developing web servers, microservices, or any networked application, freeport provides a reliable way to:
+
+- Obtain available ports dynamically at runtime
+- Check if specific ports are available before use
+- Try preferred ports first before falling back to random ones
+- Optimize port checking with parallel processing
 
 ## Features
 
-- Find any available port on a specific host
-- Try preferred ports with parallel checking for better performance
-- Check if a specific port is available
-- Support for custom hostnames/IP addresses
-- Environment variable configuration
+- **Fast parallel port checking** - Check multiple ports simultaneously for better performance
+- **Preferred port selection** - Specify ports to try first in order of preference
+- **Smart fallback strategy** - Two-stage checking ensures reliability when ports are busy
+- **Custom hostname support** - Bind to specific network interfaces or IP addresses
+- **Environment variable configuration** - Use environment variables for default settings
 
 ## Installation
 
