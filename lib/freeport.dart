@@ -54,7 +54,7 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 Future<bool> isAvailablePort(int port, {Object? hostname}) async {
   try {
     final address = _resolveAddress(hostname);
-    await ServerSocket.bind(address, port);
+    await (await ServerSocket.bind(address, port)).close();
     return true;
   } catch (_) {
     return false;
