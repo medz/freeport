@@ -54,21 +54,18 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 Future<bool> isAvailablePort(int port, {Object? hostname}) async {
   try {
     final address = _resolveAddress(hostname);
-    await ServerSocket.bind(address, port);
-    return true;
+    return await ServerSocket.bind(address, port).then((socket) async {
+      final listeningPort = socket.port;
+      await socket.close();
+
+      if (port == 0) return true;
+      return listeningPort == port;
+    });
   } catch (_) {
     return false;
   }
 }
 
-/// Resolves hostname to an [InternetAddress].
-///
-/// The [hostname] parameter can be:
-/// - An [InternetAddress] (returned as-is)
-/// - A String IP address (parsed to InternetAddress)
-/// - null (uses HOST env var or loopback)
-///
-/// Returns the resolved [InternetAddress].
 InternetAddress _resolveAddress(Object? hostname) {
   hostname ??= Platform.environment['HOST'] ?? String.fromEnvironment("HOST");
   if (hostname is String || hostname is InternetAddress) {
