@@ -71,28 +71,28 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 /// }
 /// ```
 Future<bool> isAvailablePort(int port, {Object? hostname}) async {
+  if (port == 0) return true;
+
+  late final ServerSocket? socket;
   try {
     final address = _resolveAddress(hostname);
-    return await ServerSocket.bind(address, port).then((socket) async {
-      final listeningPort = socket.port;
-      await socket.close();
-
-      if (port == 0) return true;
-      return listeningPort == port;
-    });
+    socket = await ServerSocket.bind(address, port);
+    return socket.port == port;
   } catch (_) {
+    socket = null;
     return false;
+  } finally {
+    await socket?.close();
   }
 }
 
 InternetAddress _resolveAddress(Object? hostname) {
-  hostname ??= Platform.environment['HOST'] ?? String.fromEnvironment("HOST");
-  if (hostname is String || hostname is InternetAddress) {
-    if (hostname is InternetAddress) return hostname;
-
-    final address = InternetAddress.tryParse(hostname as String);
-    if (address != null) return address;
-  }
-
-  return InternetAddress.loopbackIPv4;
+  return switch (hostname ??
+      Platform.environment['HOST'] ??
+      String.fromEnvironment("HOST")) {
+    final InternetAddress address => address,
+    final String address =>
+      InternetAddress.tryParse(address) ?? InternetAddress.loopbackIPv4,
+    _ => InternetAddress.loopbackIPv4,
+  };
 }
