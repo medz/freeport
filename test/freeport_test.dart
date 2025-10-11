@@ -99,14 +99,11 @@ void main() {
       final inUsePort = socket1.port;
 
       // Choose another port that should be available
-      final socket2 = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-      final preferredPort = socket2.port;
-
-      // Clean up
-      await socket2.close();
+      final preferredPort =
+          await freePort(hostname: InternetAddress.loopbackIPv4);
 
       // Add small delay to ensure port is fully released
-      await Future.delayed(Duration(milliseconds: 10));
+      await Future.delayed(Duration(milliseconds: 100));
 
       // First make sure the port is actually available
       final isAvailable = await isAvailablePort(preferredPort);
@@ -154,11 +151,8 @@ void main() {
       // Find 3 free ports
       final freePorts = <int>[];
       for (var i = 0; i < 3; i++) {
-        final freePort = inUsePorts[i] + 1;
         // Ensure the port is actually available
-        if (await isAvailablePort(freePort)) {
-          freePorts.add(freePort);
-        }
+        freePorts.add(await freePort());
       }
 
       // Skip test if we couldn't find enough free ports
