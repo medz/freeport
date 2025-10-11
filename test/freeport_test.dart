@@ -99,7 +99,11 @@ void main() {
       final inUsePort = socket1.port;
 
       // Choose another port that should be available
-      final preferredPort = inUsePort + 1;
+      final socket2 = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      final preferredPort = socket2.port;
+
+      // Clean up
+      await socket2.close();
 
       // First make sure the port is actually available
       final isAvailable = await isAvailablePort(preferredPort);
