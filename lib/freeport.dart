@@ -29,19 +29,18 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 
     // Map preferred ports to futures
     final futures = preferred.map((port) async {
-      final available = await isAvailablePort(port, hostname: address);
-      if (available) {
+      if (await isAvailablePort(port, hostname: address)) {
         return skipPort ??= port;
       }
     });
 
     // Wait for any future to complete
-    final maybeFastPort = await Future.any(futures);
-    if (maybeFastPort != null) return maybeFastPort;
+    if (await Future.any(futures) case final int port) {
+      return port;
+    }
 
     // If none of the preferred ports are available, using for loop
-    for (final port in preferred) {
-      if (port == skipPort) continue;
+    for (final port in preferred.where((port) => port != skipPort)) {
       if (await isAvailablePort(port, hostname: address)) {
         return port;
       }
