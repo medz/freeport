@@ -105,6 +105,9 @@ void main() {
       // Clean up
       await socket2.close();
 
+      // Add small delay to ensure port is fully released
+      await Future.delayed(Duration(milliseconds: 10));
+
       // First make sure the port is actually available
       final isAvailable = await isAvailablePort(preferredPort);
       if (!isAvailable) {
