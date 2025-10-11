@@ -24,13 +24,10 @@ import 'dart:io';
 Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
   final address = _resolveAddress(hostname);
   if (preferred != null && preferred.isNotEmpty) {
-    // Default skip port
-    int? skipPort;
-
     // Map preferred ports to futures
     final futures = preferred.map((port) async {
       if (await isAvailablePort(port, hostname: address)) {
-        return skipPort ??= port;
+        return port;
       }
     });
 
@@ -40,7 +37,7 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
     }
 
     // If none of the preferred ports are available, using for loop
-    for (final port in preferred.where((port) => port != skipPort)) {
+    for (final port in preferred) {
       if (await isAvailablePort(port, hostname: address)) {
         return port;
       }
