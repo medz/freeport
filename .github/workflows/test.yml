@@ -5,11 +5,14 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
   test:
     name: Test on ${{ matrix.os }} / Dart ${{ matrix.dart }}
     runs-on: ${{ matrix.os }}
+    # Only run on push to main OR on pull request (but not both)
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     strategy:
       fail-fast: false
       matrix:
