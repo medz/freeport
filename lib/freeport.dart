@@ -49,7 +49,7 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
   }
 
   // Any port
-  return await ServerSocket.bind(address, 0).then((socket) async {
+  return ServerSocket.bind(address, 0).then((socket) async {
     final port = socket.port;
     await socket.close();
 
