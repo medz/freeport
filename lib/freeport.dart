@@ -24,16 +24,20 @@ import 'dart:io';
 Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
   final address = _resolveAddress(hostname);
   if (preferred != null && preferred.isNotEmpty) {
+    int? availablePort;
+
     // Map preferred ports to futures
     final futures = preferred.map((port) async {
       if (await isAvailablePort(port, hostname: address)) {
-        return port;
+        return availablePort ??= port;
       }
     });
 
     // Wait for any future to complete
     if (await Future.any(futures) case final int port) {
       return port;
+    } else if (availablePort != null) {
+      return availablePort!;
     }
 
     // If none of the preferred ports are available, using for loop
