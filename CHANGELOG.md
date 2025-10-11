@@ -1,3 +1,10 @@
+## 1.0.0
+
+- Remove unnecessary await from ServerSocket.bind call
+- Ensure socket is closed after getting port number
+- Optimize preferred port selection logic
+- Handle port 0 and simplify address resolution in freeport
+
 ## 0.0.2
 
 ### Bug Fixes
