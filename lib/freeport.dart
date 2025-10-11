@@ -35,14 +35,14 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 
     // Wait for any future to complete
     if (await Future.any(futures) case final int port) {
-      return port;
-    } else if (availablePort != null) {
+      if (port != 0) return port;
+    } else if (availablePort != null && availablePort != 0) {
       return availablePort!;
     }
 
     // If none of the preferred ports are available, using for loop
     for (final port in preferred) {
-      if (await isAvailablePort(port, hostname: address)) {
+      if (port != 0 && await isAvailablePort(port, hostname: address)) {
         return port;
       }
     }
