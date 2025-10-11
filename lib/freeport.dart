@@ -50,10 +50,11 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 
   // Any port
   return ServerSocket.bind(address, 0).then((socket) async {
-    final port = socket.port;
-    await socket.close();
-
-    return port;
+    try {
+      return socket.port;
+    } finally {
+      await socket.close();
+    }
   });
 }
 
