@@ -21,7 +21,7 @@ Add freeport to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  freeport: ^0.0.2
+  freeport: ^any
 ```
 
 Or install via command line:

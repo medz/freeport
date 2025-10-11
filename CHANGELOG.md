@@ -1,3 +1,8 @@
+## 1.0.1
+
+- Fix handling of invalid port 0 in free port selection
+- Optimize preferred port selection to return first available
+
 ## 1.0.0
 
 - Remove unnecessary await from ServerSocket.bind call
