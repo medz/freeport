@@ -1,12 +1,18 @@
-## Unreleased
+## 2.0.0
+
+### Breaking changes
+
+- Invalid port values and unsupported hostname argument types now throw
+  `ArgumentError`; unexpected errors propagate instead of returning `false`.
+- Hostnames are resolved rather than silently replaced with IPv4 loopback.
+  Use `hostname: '127.0.0.1'` explicitly if you need that address.
+- `isAvailablePort(0)` now performs a real bind and can return `false`.
+
+### Fixes and improvements
 
 - Check preferred ports in order and close each probe before continuing.
 - Parse literal IP strings directly and reuse resolved addresses within each
   search to avoid repeated address lookups for occupied candidates.
-- Resolve hostnames through Dart's native socket API instead of silently using
-  loopback for non-IP strings.
-- Check port zero by binding a real socket. Report invalid arguments and
-  unexpected errors instead of treating every failure as an occupied port.
 - Honor compile-time HOST configuration in compiled applications.
 - Document port reservation limits, address defaults, and error behavior.
 - Add deterministic regression tests and reduce CI to four OS/SDK combinations.
