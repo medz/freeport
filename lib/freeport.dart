@@ -1,69 +1,59 @@
 import 'dart:io';
 
-/// Finds a free port on the given [hostname].
+/// Finds an available TCP port on [hostname].
 ///
-/// If [preferred] ports are provided, tries those first in order.
-/// If none are available or none provided, finds a random free port.
+/// Tries [preferred] ports in order, closing each probe before continuing.
+/// Zero entries are skipped. If no candidate is available, asks the operating
+/// system to assign a port. Port values must be between 0 and 65535.
 ///
-/// The [hostname] parameter can be a String IP address or an [InternetAddress].
-/// If not provided, uses HOST environment variable or loopback address.
+/// [hostname] accepts a String hostname or IP address, or an [InternetAddress].
+/// Defaults to the HOST environment variable, then the compile-time HOST value,
+/// then 127.0.0.1. String names are resolved by [ServerSocket.bind].
 ///
-/// Returns a [Future] that completes with the port number.
+/// Throws an [ArgumentError] for invalid port values or hostname types, and a
+/// [SocketException] if the final bind fails.
+///
+/// The socket is closed before returning. The port is not reserved and another
+/// process may claim it before the caller binds it.
 ///
 /// Example:
 /// ```dart
 /// // Get any free port
-/// var port = await freePort();
+/// final port = await freePort();
 ///
 /// // Try preferred ports first
-/// var port = await freePort(preferred: [8080, 8081]);
+/// final preferredPort = await freePort(preferred: [8080, 8081]);
 ///
 /// // Specify hostname
-/// var port = await freePort(hostname: '127.0.0.1');
+/// final localPort = await freePort(hostname: 'localhost');
 /// ```
 Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
   final address = _resolveAddress(hostname);
-  if (preferred != null && preferred.isNotEmpty) {
-    int? availablePort;
-
-    // Map preferred ports to futures
-    final futures = preferred.map((port) async {
-      if (await isAvailablePort(port, hostname: address)) {
-        return availablePort ??= port;
-      }
-    });
-
-    // Wait for any future to complete
-    if (await Future.any(futures) case final int port) {
-      if (port != 0) return port;
-    } else if (availablePort != null && availablePort != 0) {
-      return availablePort!;
-    }
-
-    // If none of the preferred ports are available, using for loop
-    for (final port in preferred) {
-      if (port != 0 && await isAvailablePort(port, hostname: address)) {
-        return port;
-      }
+  for (final port in preferred ?? const <int>[]) {
+    if (port != 0 && await isAvailablePort(port, hostname: address)) {
+      return port;
     }
   }
 
-  // Any port
-  return ServerSocket.bind(address, 0).then((socket) async {
-    try {
-      return socket.port;
-    } finally {
-      await socket.close();
-    }
-  });
+  final socket = await ServerSocket.bind(address, 0);
+  try {
+    return socket.port;
+  } finally {
+    await socket.close();
+  }
 }
 
-/// Checks if a specific [port] is available on the given [hostname].
+/// Checks whether a TCP socket can bind to [port] on [hostname].
 ///
-/// The [hostname] parameter can be a String IP address or an [InternetAddress].
-/// If not provided, uses HOST environment variable or loopback address.
+/// [hostname] accepts the same values and defaults as [freePort]. Port zero
+/// checks whether the system can assign a port on that address.
 ///
-/// Returns a [Future] that completes with true if port is available, false otherwise.
+/// Returns false when binding fails with a [SocketException], including address
+/// resolution errors. Invalid port values and hostname types throw an
+/// [ArgumentError]; other errors propagate.
+///
+/// The probe is closed before returning. A successful check does not reserve
+/// the port.
 ///
 /// Example:
 /// ```dart
@@ -72,28 +62,25 @@ Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
 /// }
 /// ```
 Future<bool> isAvailablePort(int port, {Object? hostname}) async {
-  if (port == 0) return true;
-
-  late final ServerSocket? socket;
+  final address = _resolveAddress(hostname);
+  final ServerSocket socket;
   try {
-    final address = _resolveAddress(hostname);
     socket = await ServerSocket.bind(address, port);
-    return socket.port == port;
-  } catch (_) {
-    socket = null;
+  } on SocketException {
     return false;
-  } finally {
-    await socket?.close();
   }
+  await socket.close();
+  return true;
 }
 
-InternetAddress _resolveAddress(Object? hostname) {
-  return switch (hostname ??
+Object _resolveAddress(Object? hostname) {
+  final address = hostname ??
       Platform.environment['HOST'] ??
-      String.fromEnvironment("HOST")) {
-    final InternetAddress address => address,
-    final String address =>
-      InternetAddress.tryParse(address) ?? InternetAddress.loopbackIPv4,
-    _ => InternetAddress.loopbackIPv4,
-  };
+      const String.fromEnvironment('HOST', defaultValue: '127.0.0.1');
+  if (address is String || address is InternetAddress) return address;
+  throw ArgumentError.value(
+    address,
+    'hostname',
+    'Must be a String or InternetAddress',
+  );
 }

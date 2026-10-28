@@ -1,5 +1,5 @@
 name: freeport
-description: Fast and reliable Dart library for finding available network ports with parallel checking and custom hostname support.
+description: A small, dependency-free Dart library for finding available TCP ports, with ordered preferred ports and hostname support.
 version: 1.0.1
 
 repository: https://github.com/medz/freeport

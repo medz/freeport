@@ -5,19 +5,31 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Test on ${{ matrix.os }} / Dart ${{ matrix.dart }}
     runs-on: ${{ matrix.os }}
-    # Only run on push to main OR on pull request (but not both)
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        dart: [stable, 3.5, 3.6, 3.7, 3.8, 3.9]
+        include:
+          - os: ubuntu-latest
+            dart: stable
+          - os: macos-latest
+            dart: stable
+          - os: windows-latest
+            dart: stable
+          - os: ubuntu-latest
+            dart: '3.5'
 
     steps:
       - uses: actions/checkout@v6
@@ -25,6 +37,8 @@ jobs:
         with:
           sdk: ${{ matrix.dart }}
       - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze --fatal-infos --fatal-warnings .
+      - if: matrix.os == 'ubuntu-latest' && matrix.dart == 'stable'
+        run: dart format --output=none --set-exit-if-changed .
+      - if: matrix.os == 'ubuntu-latest' && matrix.dart == 'stable'
+        run: dart analyze --fatal-infos --fatal-warnings .
       - run: dart test
