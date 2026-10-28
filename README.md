@@ -17,7 +17,7 @@ Or add the dependency to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  freeport: ^1.0.1
+  freeport: ^2.0.0
 ```
 
 ## Usage
@@ -42,6 +42,18 @@ Future<void> main() async {
 ```
 
 ## API
+
+### Migrating from 1.x
+
+Invalid port values and unsupported hostname argument types now throw
+`ArgumentError`. Catch or validate these inputs if your code previously relied
+on a `false` result. Unexpected errors also propagate.
+
+Hostnames are resolved instead of silently falling back to IPv4 loopback. Pass
+`hostname: '127.0.0.1'` explicitly if that is the address you need.
+`isAvailablePort(0)` now checks a real binding and can return `false`.
+
+### Functions
 
 ```dart
 Future<int> freePort({Iterable<int>? preferred, Object? hostname})

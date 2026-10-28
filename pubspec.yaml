@@ -1,6 +1,6 @@
 name: freeport
 description: A small, dependency-free Dart library for finding available TCP ports, with ordered preferred ports and hostname support.
-version: 1.0.1
+version: 2.0.0
 
 repository: https://github.com/medz/freeport
 homepage: https://github.com/medz/freeport
