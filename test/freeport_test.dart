@@ -156,6 +156,79 @@ void main() {
   });
 
   group('addresses', () {
+    test('falls back from an occupied port resolved through localhost',
+        () async {
+      final occupied = await _bind('localhost', 0);
+      final port = await freePort(
+        preferred: [occupied.port],
+        hostname: 'localhost',
+      );
+      expect(port, isNot(occupied.port));
+      await _bind(occupied.address, port);
+    });
+
+    for (final hostname in ['127.0.0.1', '::1']) {
+      test('passes $hostname as a parsed address to the native binder',
+          () async {
+        final addresses = <Object>[];
+        await IOOverrides.runZoned(
+          () async {
+            await freePort(hostname: hostname);
+            await isAvailablePort(31001, hostname: hostname);
+          },
+          serverSocketBind: (address, port,
+              {int backlog = 0,
+              bool v6Only = false,
+              bool shared = false}) async {
+            addresses.add(address as Object);
+            return _TestSocket(port == 0 ? 45000 : port);
+          },
+        );
+        expect(addresses, hasLength(2));
+        expect(
+          addresses,
+          everyElement(isA<InternetAddress>().having(
+            (address) => address.address,
+            'address',
+            hostname,
+          )),
+        );
+      });
+    }
+
+    for (final preferred in [
+      [31001, 31002, 31003],
+      [31001, 31002],
+    ]) {
+      test('reuses the native resolved address for $preferred', () async {
+        final resolved = InternetAddress.loopbackIPv6;
+        final addresses = <Object>[];
+        final attempts = <int>[];
+        final assigned = _TestSocket(preferred.length == 3 ? 31003 : 45000);
+        final port = await IOOverrides.runZoned(
+          () => freePort(preferred: preferred, hostname: 'local.test'),
+          serverSocketBind: (address, port,
+              {int backlog = 0,
+              bool v6Only = false,
+              bool shared = false}) async {
+            addresses.add(address as Object);
+            attempts.add(port);
+            if (port == 31001) {
+              throw SocketException('Address in use', address: resolved);
+            }
+            if (port == 31002) {
+              throw const SocketException('Address in use');
+            }
+            return assigned;
+          },
+        );
+        expect(port, assigned.port);
+        expect(addresses, ['local.test', same(resolved), same(resolved)]);
+        expect(attempts, [31001, 31002, preferred.length == 3 ? 31003 : 0]);
+        expect(assigned.closed, isTrue);
+      });
+    }
+
     for (final hostname in <Object>[
       loopback,
       '127.0.0.1',

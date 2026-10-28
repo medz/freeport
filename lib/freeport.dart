@@ -9,6 +9,8 @@ import 'dart:io';
 /// [hostname] accepts a String hostname or IP address, or an [InternetAddress].
 /// Defaults to the HOST environment variable, then the compile-time HOST value,
 /// then 127.0.0.1. String names are resolved by [ServerSocket.bind].
+/// Literal IP strings are parsed directly. A resolved address reported by a
+/// failed bind is reused for the rest of this search.
 ///
 /// Throws an [ArgumentError] for invalid port values or hostname types, and a
 /// [SocketException] if the final bind fails.
@@ -28,11 +30,19 @@ import 'dart:io';
 /// final localPort = await freePort(hostname: 'localhost');
 /// ```
 Future<int> freePort({Iterable<int>? preferred, Object? hostname}) async {
-  final address = _resolveAddress(hostname);
+  var address = _resolveAddress(hostname);
   for (final port in preferred ?? const <int>[]) {
-    if (port != 0 && await isAvailablePort(port, hostname: address)) {
-      return port;
+    if (port == 0) continue;
+    final ServerSocket socket;
+    try {
+      socket = await ServerSocket.bind(address, port);
+    } on SocketException catch (error) {
+      // Native bind failures retain the resolved address, including IPv6 scope.
+      address = error.address ?? address;
+      continue;
     }
+    await socket.close();
+    return port;
   }
 
   final socket = await ServerSocket.bind(address, 0);
@@ -77,7 +87,8 @@ Object _resolveAddress(Object? hostname) {
   final address = hostname ??
       Platform.environment['HOST'] ??
       const String.fromEnvironment('HOST', defaultValue: '127.0.0.1');
-  if (address is String || address is InternetAddress) return address;
+  if (address is String) return InternetAddress.tryParse(address) ?? address;
+  if (address is InternetAddress) return address;
   throw ArgumentError.value(
     address,
     'hostname',

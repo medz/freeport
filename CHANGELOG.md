@@ -1,6 +1,8 @@
 ## Unreleased
 
 - Check preferred ports in order and close each probe before continuing.
+- Parse literal IP strings directly and reuse resolved addresses within each
+  search to avoid repeated address lookups for occupied candidates.
 - Resolve hostnames through Dart's native socket API instead of silently using
   loopback for non-IP strings.
 - Check port zero by binding a real socket. Report invalid arguments and
