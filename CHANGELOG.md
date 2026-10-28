@@ -1,3 +1,14 @@
+## Unreleased
+
+- Check preferred ports in order and close each probe before continuing.
+- Resolve hostnames through Dart's native socket API instead of silently using
+  loopback for non-IP strings.
+- Check port zero by binding a real socket. Report invalid arguments and
+  unexpected errors instead of treating every failure as an occupied port.
+- Honor compile-time HOST configuration in compiled applications.
+- Document port reservation limits, address defaults, and error behavior.
+- Add deterministic regression tests and reduce CI to four OS/SDK combinations.
+
 ## 1.0.1
 
 - Fix handling of invalid port 0 in free port selection
