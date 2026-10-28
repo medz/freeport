@@ -78,6 +78,11 @@ uses the first resolved address. The address must belong to the local machine;
 this library does not scan ports on remote hosts. An invalid hostname is not
 silently replaced with loopback. Unsupported argument types throw `ArgumentError`.
 
+Literal IP strings are parsed directly. When a failed native bind reports the
+resolved address, `freePort` reuses it for the remaining candidates and fallback.
+This avoids repeating address lookups for occupied ports. Addresses are not
+cached across calls.
+
 The address is selected in this order:
 
 1. The explicit `hostname` argument.
@@ -123,6 +128,10 @@ dart test
 
 CI tests stable Dart on Linux, macOS, and Windows, plus Dart 3.5 on Linux.
 Formatting and static analysis run once on stable Linux.
+
+Run `dart run benchmark/freeport.dart` to measure port discovery with IP strings
+and `localhost`, including early success and occupied candidate lists. It uses
+local sockets and reports median and 95th-percentile timings after warmup.
 
 ## License
 
